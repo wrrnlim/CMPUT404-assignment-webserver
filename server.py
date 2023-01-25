@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -32,7 +33,17 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        file_path = ""
+        if self.data:
+            file_path = f'./www/{self.data.split()[1].decode("utf-8")}'
+        if os.path.isfile(file_path):
+            with open(file_path) as file:
+                header = "HTTP/1.1 200 OK\n\n".encode("utf-8")
+                response = file.read().encode("utf-8")
+        else:
+            header = "HTTP/1.1 404 Not Found\n\n".encode("utf-8")
+            response = "<p>404 Not Found</p>".encode("utf-8")
+        self.request.sendall(header + response)
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080

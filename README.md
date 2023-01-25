@@ -24,3 +24,6 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+## References
+
+Python Simple Socket - Get URL from Client Request answer by Ethan Hill on StackOverflow: https://stackoverflow.com/questions/53163366/python-simple-socket-get-url-from-client-request

@@ -33,17 +33,44 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        file_path = ""
-        if self.data:
-            file_path = f'./www/{self.data.split()[1].decode("utf-8")}'
-        if os.path.isfile(file_path):
-            with open(file_path) as file:
-                header = "HTTP/1.1 200 OK\n\n".encode("utf-8")
-                response = file.read().encode("utf-8")
-        else:
-            header = "HTTP/1.1 404 Not Found\n\n".encode("utf-8")
-            response = "<p>404 Not Found</p>".encode("utf-8")
-        self.request.sendall(header + response)
+        serve_dir = "./www/"
+        http_version = "HTTP/1.1 "
+        status = ""
+        location = ""
+        content_type = ""
+        res_html = ""
+
+        split_data = self.data.split()
+        req_method = split_data[0].decode("utf-8")
+        req_path = split_data[1].decode("utf-8")
+
+        correct_method = True
+        if req_method != "GET":
+            status = "405 Not Allowed\r\n"
+            res_html = "<p>405 Not Allowed</p>"
+            correct_method = False
+        if correct_method:
+            if req_path.endswith("/"): req_path += "index.html"
+            if os.path.isdir(serve_dir + req_path) and not req_path.endswith("/"):
+                status = "301 Moved Permanently\r\n"
+                location = f"Location: {req_path}/\r\n"
+                content_type = "Content-Type:text/html\r\n"
+                res_html = f"<h1>301 Moved Permanently</h1>The document has moved <a href='{req_path}/'>here</a>."
+                req_path += "/"
+            
+            elif os.path.isfile(serve_dir + req_path):
+                with open(serve_dir + req_path) as file:
+                    status = "200 OK\r\n"
+                    if req_path.endswith(".css"): content_type = "Content-Type:text/css\r\n"
+                    else: content_type = "Content-Type:text/html\r\n"
+                    res_html = file.read()
+            else:
+                status = "404 Not Found\r\n"
+                res_html = "<p>404 Not Found</p>"
+        
+        response = http_version + status + location + content_type + "\n" + res_html
+        response = response.encode("utf-8")
+        self.request.sendall(response)
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080

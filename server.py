@@ -58,7 +58,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 res_html = f"<h1>301 Moved Permanently</h1>The document has moved <a href='{req_path}/'>here</a>."
                 req_path += "/"
             
-            elif os.path.isfile(serve_dir + req_path) and not req_path.startswith("/.."):
+            elif os.path.isfile(serve_dir + req_path) and "../" not in req_path:
                 with open(serve_dir + req_path) as file:
                     status = "200 OK\r\n"
                     if req_path.endswith(".css"): content_type = "Content-Type:text/css\r\n"
